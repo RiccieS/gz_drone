@@ -1,4 +1,4 @@
-launch: gz sim /mnt/d/UNOB/STC/gz_drone/quadcopter_world.sdf
+launch: gz sim quadcopter_world.sdf
 
 turn on/off rotors:
 gz topic -t /X3/gazebo/command/motor_speed --msgtype gz.msgs.Actuators -p 'velocity:[700, 700, 700, 700]'

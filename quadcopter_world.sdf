@@ -75,7 +75,7 @@
 
     <!-- Spawn Your Quadcopter -->
     <include>
-      <uri>file://my_quadcopter.sdf</uri>
+      <uri>file://my_quadcopter_lidar.sdf</uri>
     </include>
     
   </world>
