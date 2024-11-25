@@ -1,0 +1,3 @@
+/mnt/d/UNOB/STC/gz_drone/build/CMakeFiles/lidar_control.dir
+/mnt/d/UNOB/STC/gz_drone/build/CMakeFiles/edit_cache.dir
+/mnt/d/UNOB/STC/gz_drone/build/CMakeFiles/rebuild_cache.dir
