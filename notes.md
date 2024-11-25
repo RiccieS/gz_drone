@@ -9,3 +9,6 @@ gz topic -t /X3/gazebo/command/motor_speed --msgtype gz.msgs.Actuators -p 'veloc
 
 GAZEBO's repository:
 https://github.com/gazebosim/gz-sim/tree/gz-sim9/examples/worlds
+
+GAZEBO's tutorial:
+https://gazebosim.org/docs/harmonic/sensors/

@@ -3,7 +3,7 @@
   <model name="quadcopter">
     <include>
       <uri>
-        https://fuel.gazebosim.org/1.0/OpenRobotics/models/X3 UAV/4
+        model://x3
       </uri>
       <plugin
         filename="gz-sim-multicopter-motor-model-system"
@@ -88,10 +88,10 @@
     </include>
 
     <!-- Create a frame for the lidar attached to the base_link -->
-    <frame name="lidar_frame" attached_to="X3/base_link">
-      <!-- Adjust the pose of the lidar relative to the quadcopter -->
-      <pose>0 0 0.1 0 0 0</pose> <!-- Lidar 0.1m above the base link -->
+    <frame name="lidar_frame" attached_to="x3::X3/base_link">
+      <pose>0 0 0.1 0 0 0</pose>
     </frame>
+    
 
     <!-- Lidar Sensor -->
     <sensor name="gpu_lidar" type="gpu_lidar">
