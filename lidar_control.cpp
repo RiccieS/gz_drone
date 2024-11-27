@@ -22,7 +22,8 @@ void publishMotorSpeed(const std::vector<double>& speeds) {
     for (const auto& speed : speeds) {
         actuatorMsg.add_velocity(speed);
     }
-    node.Advertise<gz::msgs::Actuators>("/X3/gazebo/command/motor_speed")->Publish(actuatorMsg);
+    auto publisher = node.Advertise<gz::msgs::Actuators>("/X3/gazebo/command/motor_speed");
+    publisher.Publish(actuatorMsg);
 }
 
 void lidarCallback(const gz::msgs::LaserScan& msg) {
