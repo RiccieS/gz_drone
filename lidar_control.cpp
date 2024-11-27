@@ -3,68 +3,68 @@
 #include <gz/transport/Node.hh>
 #include <iostream>
 #include <vector>
+#include <thread>
+#include <chrono>
 
 gz::msgs::Actuators actuatorMsg;
 gz::transport::Node node;
 
 std::vector<double> hoverSpeed = {700, 700, 700, 700}; // Hover speed
-std::vector<double> moveForwardSpeed = {750, 750, 750, 750}; // Forward movement speed
-std::vector<double> turnRightSpeed = {700, 750, 700, 750}; // Right turn speed
+std::vector<double> moveForwardSpeed = {750, 750, 750, 750}; // Forward speed
 std::vector<double> stopSpeed = {0, 0, 0, 0}; // Stop motors
 
-bool hasAscended = false;
-bool hasTurned = false;
-double distanceToWall = 1.0; // Distance threshold in meters
-double forwardDistance = 5.0; // Distance to move forward after turning
+double targetAltitude = 2.0; // Desired altitude in meters
+bool isHovering = false;
 
 void publishMotorSpeed(const std::vector<double>& speeds) {
     actuatorMsg.mutable_velocity()->Clear();
     for (const auto& speed : speeds) {
         actuatorMsg.add_velocity(speed);
     }
-    auto publisher = node.Advertise<gz::msgs::Actuators>("/X3/gazebo/command/motor_speed");
+    static auto publisher = node.Advertise<gz::msgs::Actuators>("/X3/gazebo/command/motor_speed");
     publisher.Publish(actuatorMsg);
 }
 
-void lidarCallback(const gz::msgs::LaserScan& msg) {
-    double minRange = *std::min_element(msg.ranges().begin(), msg.ranges().end());
+void gradualMotorSpeedAdjustment(const std::vector<double>& targetSpeeds, int steps = 50, int durationMs = 3000) {
+    std::vector<double> currentSpeeds(actuatorMsg.velocity().begin(), actuatorMsg.velocity().end());
+    if (currentSpeeds.size() != targetSpeeds.size()) {
+        currentSpeeds = std::vector<double>(targetSpeeds.size(), 0.0);
+    }
 
-    if (!hasAscended) {
-        std::cout << "Ascending to 2 meters...\n";
-        publishMotorSpeed(hoverSpeed);
-        // Assume the drone reaches 2 meters after a few seconds.
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-        hasAscended = true;
-    } else if (minRange > distanceToWall && !hasTurned) {
-        std::cout << "Flying forward...\n";
-        publishMotorSpeed(moveForwardSpeed);
-    } else if (minRange <= distanceToWall && !hasTurned) {
-        std::cout << "Wall detected! Turning right...\n";
-        publishMotorSpeed(turnRightSpeed);
-        // Simulate turning right for a short duration.
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-        hasTurned = true;
-    } else if (hasTurned) {
-        std::cout << "Flying forward for 5 meters...\n";
-        publishMotorSpeed(moveForwardSpeed);
-        // Simulate moving forward for the required distance.
-        std::this_thread::sleep_for(std::chrono::seconds(5));
-        std::cout << "Mission Complete. Stopping drone...\n";
-        publishMotorSpeed(stopSpeed);
-        gz::transport::waitForShutdown();
+    for (int i = 0; i <= steps; ++i) {
+        for (size_t j = 0; j < currentSpeeds.size(); ++j) {
+            currentSpeeds[j] += (targetSpeeds[j] - currentSpeeds[j]) / (steps - i + 1);
+        }
+        publishMotorSpeed(currentSpeeds);
+        std::this_thread::sleep_for(std::chrono::milliseconds(durationMs / steps));
     }
 }
 
-int main(int argc, char** argv) {
-    std::cout << "Starting LiDAR control node...\n";
+void performFlightSequence() {
+    // Ascend
+    std::cout << "Ascending to target altitude...\n";
+    gradualMotorSpeedAdjustment(hoverSpeed, 100, 5000);
+    std::this_thread::sleep_for(std::chrono::seconds(5)); // Simulate ascent time
+    std::cout << "Stabilized at hover.\n";
 
-    std::string lidarTopic = "/quadcopter/lidar";
+    // Forward flight
+    std::cout << "Flying forward...\n";
+    gradualMotorSpeedAdjustment(moveForwardSpeed, 100, 5000);
+    std::this_thread::sleep_for(std::chrono::seconds(5)); // Simulate forward motion time
+    std::cout << "Completed forward motion.\n";
 
-    if (!node.Subscribe(lidarTopic, lidarCallback)) {
-        std::cerr << "Error subscribing to topic [" << lidarTopic << "]" << std::endl;
-        return -1;
-    }
+    // Landing
+    std::cout << "Landing...\n";
+    gradualMotorSpeedAdjustment(stopSpeed, 100, 5000);
+    std::cout << "Landed and motors stopped.\n";
 
     gz::transport::waitForShutdown();
+}
+
+int main(int argc, char** argv) {
+    std::cout << "Starting simple flight sequence node...\n";
+
+    performFlightSequence();
+
     return 0;
 }

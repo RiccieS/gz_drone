@@ -1,4 +1,8 @@
-launch: gz sim quadcopter_world.sdf
+LAUNCH: 
+=> need to run those commands in separate terminals:
+SIM: gz sim quadcopter_world.sdf
+LIDAR script: ./build/lidar_control
+*** after every change in script, have to run cmake .. and make
 
 turn on/off rotors:
 gz topic -t /X3/gazebo/command/motor_speed --msgtype gz.msgs.Actuators -p 'velocity:[700, 700, 700, 700]'
