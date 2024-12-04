@@ -263,14 +263,16 @@ CMakeFiles/lidar_control.dir/lidar_control.cpp.o: \
  /usr/include/gz/msgs10/gz/msgs/details/header.pb.h \
  /usr/include/gz/msgs10/gz/msgs/time.pb.h \
  /usr/include/gz/msgs10/gz/msgs/details/time.pb.h \
- /usr/include/gz/msgs10/gz/msgs/laserscan.pb.h \
- /usr/include/gz/msgs10/gz/msgs/details/laserscan.pb.h \
- /usr/include/gz/msgs10/gz/msgs/pose.pb.h \
- /usr/include/gz/msgs10/gz/msgs/details/pose.pb.h \
+ /usr/include/gz/msgs10/gz/msgs/altimeter.pb.h \
+ /usr/include/gz/msgs10/gz/msgs/details/altimeter.pb.h \
+ /usr/include/gz/msgs10/gz/msgs/imu.pb.h \
+ /usr/include/gz/msgs10/gz/msgs/details/imu.pb.h \
  /usr/include/gz/msgs10/gz/msgs/vector3d.pb.h \
  /usr/include/gz/msgs10/gz/msgs/details/vector3d.pb.h \
  /usr/include/gz/msgs10/gz/msgs/quaternion.pb.h \
  /usr/include/gz/msgs10/gz/msgs/details/quaternion.pb.h \
+ /usr/include/gz/msgs10/gz/msgs/float_v.pb.h \
+ /usr/include/gz/msgs10/gz/msgs/details/float_v.pb.h \
  /usr/include/gz/transport13/gz/transport/Node.hh \
  /usr/include/c++/13/optional \
  /usr/include/gz/transport13/gz/transport/AdvertiseOptions.hh \

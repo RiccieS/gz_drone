@@ -19,3 +19,8 @@ https://github.com/gazebosim/gz-sim/tree/gz-sim9/examples/worlds
 GAZEBO's tutorials:
 https://gazebosim.org/docs/harmonic/sensors/
 https://github.com/gazebosim/docs/blob/master/harmonic/tutorials/sensors/sensor_tutorial.sdf
+
+
+
+Ispiration:
+pathfinding: https://github.com/yuchnw/quadSimulator?tab=readme-ov-file
