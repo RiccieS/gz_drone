@@ -1,6 +1,6 @@
 #include <gz/msgs/actuators.pb.h>
-#include <gz/msgs/altimeter.pb.h>
-#include <gz/msgs/imu.pb.h>
+#include <gz/msgs/altimeter.pb.h>  // For altitude data
+#include <gz/msgs/imu.pb.h>        // For IMU data
 #include <gz/transport/Node.hh>
 #include <iostream>
 #include <vector>
@@ -8,28 +8,18 @@
 #include <chrono>
 #include <atomic>
 #include <cmath>
-#include <algorithm>
 
 // Define actuator and transport
 gz::msgs::Actuators actuatorMsg;
 gz::transport::Node node;
 
 // Target and control variables
+std::vector<double> hoverSpeed = {700, 700, 700, 700}; // Initial guess for hover speed
 double targetAltitude = 3.0;                          // Target altitude in meters
 std::atomic<double> currentAltitude(0.0);             // Current altitude (updated via callback)
-std::atomic<double> currentVelocity(0.0);             // Current velocity estimate
-std::atomic<double> currentMotorSpeed(700.0);         // Current motor speed estimate
+std::atomic<double> verticalAcceleration(0.0);        // Vertical acceleration from IMU
+std::atomic<double> currentMotorSpeed(700.0);         // Current motor speed estimate for hovering
 std::atomic<bool> stopHovering(false);                // Stop hovering flag
-
-// PID Controller parameters
-const double Kp = 5.0;    // Proportional gain
-const double Ki = 0.5;    // Integral gain
-const double Kd = 1.0;    // Derivative gain
-double integralError = 0.0;  // Accumulated integral error
-
-// Speed bounds for adaptive adjustment
-double maxSpeed = 750.0;  // Maximum motor speed
-double minSpeed = 500.0;  // Minimum motor speed
 
 // Publish motor speeds
 void publishMotorSpeed(const std::vector<double> &speeds) {
@@ -43,68 +33,56 @@ void publishMotorSpeed(const std::vector<double> &speeds) {
 
 // Altimeter callback
 void altimeterCallback(const gz::msgs::Altimeter &msg) {
-    currentAltitude.store(msg.vertical_position());
+    currentAltitude.store(msg.vertical_position()); // Update altitude
 }
 
-// IMU callback (for velocity estimation)
+// IMU callback (for future stabilization improvements)
 void imuCallback(const gz::msgs::IMU &msg) {
-    currentVelocity.store(msg.linear_acceleration().z()); // Assuming Z is upward
+    verticalAcceleration.store(msg.linear_acceleration().z()); // Update vertical acceleration
 }
 
-// PID control loop for altitude
+// Altitude control logic
 void controlAltitude() {
-    double previousError = 0.0;  // Error in the previous loop
-    double previousAltitude = currentAltitude.load();  // Store for derivative calculation
+    const double kp = 10.0; // Proportional gain
+    const double kd = 20.0; // Derivative gain
+    const double tolerance = 0.1; // Altitude tolerance in meters
+    double previousAltitude = currentAltitude.load();
 
     while (!stopHovering.load()) {
-        double currentAlt = currentAltitude.load();
-        double altitudeError = targetAltitude - currentAlt;
+        double altitudeError = targetAltitude - currentAltitude.load();
+        double altitudeDerivative = currentAltitude.load() - previousAltitude;
+        previousAltitude = currentAltitude.load();
 
-        // Calculate derivative (rate of change of altitude)
-        double altitudeDerivative = (currentAlt - previousAltitude) / 0.1; // Derivative over 100ms
-        previousAltitude = currentAlt;
+        // Compute motor speed adjustment
+        double speedAdjustment = kp * altitudeError - kd * altitudeDerivative;
+        double newSpeed = currentMotorSpeed.load();
+        if((currentMotorSpeed.load() + speedAdjustment < 700) && (currentMotorSpeed.load() + speedAdjustment > 500)){
+            newSpeed = currentMotorSpeed.load() + speedAdjustment;
+        }
+        
 
-        // Update integral error
-        integralError += altitudeError * 0.1; // Integrate over 100ms
-
-        // Compute PID output
-        double speedAdjustment = (Kp * altitudeError) +
-                                 (Ki * integralError) -
-                                 (Kd * altitudeDerivative);
-
-        // Adjust motor speed
-        double newSpeed = currentMotorSpeed.load() + speedAdjustment;
-        newSpeed = std::clamp(newSpeed, minSpeed, maxSpeed); // Clamp to allowable range
+        // Clamp motor speed to prevent over/under speeding
+        newSpeed = std::max(0.0, std::min(1200.0, newSpeed));
         currentMotorSpeed.store(newSpeed);
 
-        // Adaptive adjustment of speed bounds
-        if (altitudeError > 0) {
-            minSpeed = std::max(minSpeed - 1.0, 500.0); // Decrease min speed
-            maxSpeed = std::min(maxSpeed + 1.0, 750.0); // Increase max speed
-        } else {
-            minSpeed = std::min(minSpeed + 1.0, 750.0); // Increase min speed
-            maxSpeed = std::max(maxSpeed - 1.0, 500.0); // Decrease max speed
-        }
-
-        // Set motor speeds
+        // Update motor speeds
         std::vector<double> motorSpeeds(4, currentMotorSpeed.load());
         publishMotorSpeed(motorSpeeds);
 
         // Print telemetry
-        std::cout << "Altitude: " << currentAlt << " m, "
-                  << "Motor Speed: " << currentMotorSpeed.load() << " RPM, "
+        std::cout << "Altitude: " << currentAltitude.load() << " m, "
+                  << "Velocity: " << currentMotorSpeed.load() << " RPM, "
                   << "Error: " << altitudeError << " m\n";
 
-        // Sleep for loop interval
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
-// Telemetry printer thread
+// Print telemetry periodically
 void telemetryPrinter() {
     while (!stopHovering.load()) {
         std::cout << "Current Altitude: " << currentAltitude.load() 
-                  << " m | Vertical Velocity: " << currentVelocity.load() << " m/s\n";
+                  << " m | Vertical Acceleration: " << verticalAcceleration.load() << " m/s²\n";
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
@@ -112,7 +90,6 @@ void telemetryPrinter() {
 // Main function
 int main(int argc, char **argv) {
     std::cout << "Starting drone control program...\n";
-    std::cout << "Hovering target altitude: " << targetAltitude << " meters.\n";
 
     // Subscribe to altimeter and IMU topics
     if (!node.Subscribe("/quadcopter/altimeter", altimeterCallback)) {
