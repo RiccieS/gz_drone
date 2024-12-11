@@ -73,15 +73,15 @@ CMakeFiles/lidar_control.dir/lidar_control.cpp.o: CMakeFiles/lidar_control.dir/f
 CMakeFiles/lidar_control.dir/lidar_control.cpp.o: /mnt/d/UNOB/STC/gz_drone/lidar_control.cpp
 CMakeFiles/lidar_control.dir/lidar_control.cpp.o: CMakeFiles/lidar_control.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/mnt/d/UNOB/STC/gz_drone/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/lidar_control.dir/lidar_control.cpp.o"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/lidar_control.dir/lidar_control.cpp.o -MF CMakeFiles/lidar_control.dir/lidar_control.cpp.o.d -o CMakeFiles/lidar_control.dir/lidar_control.cpp.o -c /mnt/d/UNOB/STC/gz_drone/lidar_control.cpp
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/lidar_control.dir/lidar_control.cpp.o -MF CMakeFiles/lidar_control.dir/lidar_control.cpp.o.d -o CMakeFiles/lidar_control.dir/lidar_control.cpp.o -c /mnt/d/UNOB/STC/gz_drone/lidar_control.cpp
 
 CMakeFiles/lidar_control.dir/lidar_control.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lidar_control.dir/lidar_control.cpp.i"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/d/UNOB/STC/gz_drone/lidar_control.cpp > CMakeFiles/lidar_control.dir/lidar_control.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/d/UNOB/STC/gz_drone/lidar_control.cpp > CMakeFiles/lidar_control.dir/lidar_control.cpp.i
 
 CMakeFiles/lidar_control.dir/lidar_control.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lidar_control.dir/lidar_control.cpp.s"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/d/UNOB/STC/gz_drone/lidar_control.cpp -o CMakeFiles/lidar_control.dir/lidar_control.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/d/UNOB/STC/gz_drone/lidar_control.cpp -o CMakeFiles/lidar_control.dir/lidar_control.cpp.s
 
 # Object files for target lidar_control
 lidar_control_OBJECTS = \

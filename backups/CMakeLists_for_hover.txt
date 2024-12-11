@@ -1,0 +1,17 @@
+cmake_minimum_required(VERSION 3.10)
+project(quadcopter_hover)
+
+# Find Ignition Gazebo libraries
+find_package(gz-sim8 REQUIRED) # Adjust the version to match your installation (e.g., sim6, sim5, etc.)
+find_package(gz-transport13 REQUIRED)
+find_package(gz-math7 REQUIRED)
+
+# Build the plugin
+add_library(quadcopter_hover SHARED quadcopter_hover.cpp)
+target_link_libraries(quadcopter_hover
+    gz-sim8::gz-sim8
+    gz-transport13::gz-transport13
+    gz-math7::gz-math7
+    gz-physics7::gz-physics7
+    gz-common5::gz-common5
+)

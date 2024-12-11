@@ -1,4 +1,4 @@
-LAUNCH: 
+# LAUNCH: 
 => need to run those commands in separate terminals:
 SIM: gz sim quadcopter_world.sdf
 LIDAR script: ./build/lidar_control
@@ -7,6 +7,8 @@ LIDAR script: ./build/lidar_control
 turn on/off rotors:
 gz topic -t /X3/gazebo/command/motor_speed --msgtype gz.msgs.Actuators -p 'velocity:[700, 700, 700, 700]'
 gz topic -t /X3/gazebo/command/motor_speed --msgtype gz.msgs.Actuators -p 'velocity:[0, 0, 0, 0]'
+
+==> before running "cmake .." => rm -rf *
 
 LIDAR:
  gz topic -e -t /quadcopter/lidar
@@ -26,3 +28,6 @@ https://github.com/gazebosim/docs/blob/master/harmonic/tutorials/sensors/sensor_
 Ispiration:
 pathfinding: https://github.com/yuchnw/quadSimulator?tab=readme-ov-file
 hovering: https://www.youtube.com/watch?v=GK1t8YIvGM8&t=552s
+
+
+list of libraries: \\wsl.localhost\Ubuntu-24.04\usr\share\gz
