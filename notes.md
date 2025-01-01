@@ -28,6 +28,7 @@ https://github.com/gazebosim/docs/blob/master/harmonic/tutorials/sensors/sensor_
 Ispiration:
 pathfinding: https://github.com/yuchnw/quadSimulator?tab=readme-ov-file
 hovering: https://www.youtube.com/watch?v=GK1t8YIvGM8&t=552s
+control with controller: https://github.com/wilselby/ROS_quadrotor_simulator
 
 
 list of libraries: \\wsl.localhost\Ubuntu-24.04\usr\share\gz

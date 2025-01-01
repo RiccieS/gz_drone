@@ -24,9 +24,9 @@ std::atomic<double> imuRoll(0.0);             // Stores the roll value
 std::atomic<double> imuPitch(0.0);            // Stores the pitch value
 
 // PID Controller parameters
-const double Kp = 1.5;      // Proportional gain
-const double Ki = 0.05;     // Integral gain
-const double Kd = 2.0;      // Derivative gain
+const double Kp = 1.2;      // Proportional gain
+const double Ki = 0.02;     // Integral gain
+const double Kd = 8.0;      // Derivative gain
 double integralError = 0.0; // Accumulated integral error
 
 // Speed bounds for adaptive adjustment
@@ -50,15 +50,16 @@ const double alpha = 0.8; // Smoothing factor (0.0-1.0)
 std::atomic<double> smoothedAltitude(0.0);
 void altimeterCallback(const gz::msgs::Altimeter &msg)
 {
+    static double smoothedAltitude = 0.0;
+    const double alpha = 0.8; // Smoothing factor
     double rawAltitude = msg.vertical_position();
-    smoothedAltitude.store(alpha * rawAltitude + (1 - alpha) * smoothedAltitude.load());
-    currentAltitude.store(smoothedAltitude.load());
+    smoothedAltitude = alpha * rawAltitude + (1 - alpha) * smoothedAltitude;
+    currentAltitude.store(smoothedAltitude);
 }
 
 // IMU callback (for velocity estimation)
 void imuCallback(const gz::msgs::IMU &msg)
 {
-    // Assuming the IMU orientation is a quaternion
     auto orientation = msg.orientation();
     double qx = orientation.x();
     double qy = orientation.y();
@@ -68,65 +69,71 @@ void imuCallback(const gz::msgs::IMU &msg)
     // Convert quaternion to Euler angles
     double sinr_cosp = 2 * (qw * qx + qy * qz);
     double cosr_cosp = 1 - 2 * (qx * qx + qy * qy);
-    imuRoll.store(std::atan2(sinr_cosp, cosr_cosp)); // Roll
+    imuRoll.store(std::atan2(sinr_cosp, cosr_cosp));
 
     double sinp = 2 * (qw * qy - qz * qx);
-    if (std::abs(sinp) >= 1)
-        imuPitch.store(std::copysign(M_PI / 2, sinp)); // Pitch (clamped)
-    else
-        imuPitch.store(std::asin(sinp));
-
-    // Update linear acceleration for velocity estimation
-    currentVelocity.store(msg.linear_acceleration().z()); // Assuming Z is upward
+    imuPitch.store((std::abs(sinp) >= 1) ? std::copysign(M_PI / 2, sinp) : std::asin(sinp));
 }
 
 // PID control loop for altitude
 void controlAltitude()
 {
-    double previousError = 0.0;                       // Error in the previous loop
-    double previousAltitude = currentAltitude.load(); // Store for derivative calculation
+    double previousError = 0.0;
+    double previousAltitude = currentAltitude.load();
 
     while (!stopHovering.load())
     {
         double currentAlt = currentAltitude.load();
         double altitudeError = targetAltitude - currentAlt;
 
+        // Apply dead zone
+        if (std::abs(altitudeError) < 0.05)
+        {
+            altitudeError = 0.0;
+        }
+
         // Calculate derivative (rate of change of altitude)
         double altitudeDerivative = (currentAlt - previousAltitude) / 0.1; // Derivative over 100ms
         previousAltitude = currentAlt;
 
-        // Update integral error
-        integralError += altitudeError * 0.1; // Integrate over 100ms
+        // Update integral error with bounds
+        integralError += altitudeError * 0.1;
+        integralError = std::clamp(integralError, -10.0, 10.0);
 
-        // Compute PID output
         double speedAdjustment = (Kp * altitudeError) +
                                  (Ki * integralError) -
                                  (Kd * altitudeDerivative);
 
-        // Roll and pitch corrections
-        double rollCorrection = 0.05 * imuRoll.load(); // Example correction based on IMU
-        double pitchCorrection = 0.05 * imuPitch.load();
+        speedAdjustment = std::clamp(speedAdjustment, -150.0, 150.0); // Dynamic adjustment
 
-        // Adjust motor speeds considering roll and pitch corrections
-        double newSpeed = currentMotorSpeed.load() + speedAdjustment;
-        newSpeed = std::clamp(newSpeed, minSpeed, maxSpeed); // Clamp to allowable range
+        // Roll and pitch corrections
+        double rollCorrection = 0.02 * imuRoll.load();
+        double pitchCorrection = 0.02 * imuPitch.load();
+
+        // Smooth motor speeds
+        static double lastSpeed = currentMotorSpeed.load();
+        double smoothedSpeed = 0.8 * lastSpeed + 0.2 * (currentMotorSpeed.load() + speedAdjustment);
+        currentMotorSpeed.store(smoothedSpeed);
+
+        double newSpeed = std::clamp(smoothedSpeed, 650.0, 800.0);
 
         // Apply motor speed corrections
         std::vector<double> motorSpeeds = {
-            newSpeed - rollCorrection + pitchCorrection, // Rotor 1
-            newSpeed + rollCorrection + pitchCorrection, // Rotor 2
-            newSpeed + rollCorrection - pitchCorrection, // Rotor 3
-            newSpeed - rollCorrection - pitchCorrection  // Rotor 4
-        };
+            newSpeed - rollCorrection + pitchCorrection,
+            newSpeed + rollCorrection + pitchCorrection,
+            newSpeed + rollCorrection - pitchCorrection,
+            newSpeed - rollCorrection - pitchCorrection};
 
         publishMotorSpeed(motorSpeeds);
 
         // Print telemetry
         std::cout << "Altitude: " << currentAlt << " m, "
-                  << "Motor Speeds: [" << motorSpeeds[0] << ", " << motorSpeeds[1] << ", "
-                  << motorSpeeds[2] << ", " << motorSpeeds[3] << "] RPM, "
-                  << "Error: " << altitudeError << " m, "
-                  << "Vertical Velocity: " << currentVelocity.load() << " m/s\n";
+                  << "Motor Speeds: [" << motorSpeeds[0] << ", "
+                  << motorSpeeds[1] << ", " << motorSpeeds[2] << ", "
+                  << motorSpeeds[3] << "] RPM, "
+                  << "Roll Correction: " << rollCorrection << ", "
+                  << "Pitch Correction: " << pitchCorrection << ", "
+                  << "Error: " << altitudeError << " m\n";
 
         // Sleep for loop interval
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -145,22 +152,15 @@ void telemetryPrinter()
 }
 
 // Takeoff function to safely lift the drone to a starting altitude
-void takeoff()
-{
-    std::cout << "Starting takeoff...\n";
-    for (double speed = minSpeed; speed < maxSpeed; speed += 50)
-    {
+void takeoff() {
+    for (double speed = 700.0; speed < 800.0; speed += 10.0) {
         std::vector<double> motorSpeeds(4, speed);
         publishMotorSpeed(motorSpeeds);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-        if (currentAltitude.load() > 0.1)
-        {
-            std::cout << "Lift-off detected. Transitioning to hover control.\n";
-            break;
-        }
+        if (currentAltitude.load() > 0.5) break;
     }
 }
+
 
 int main(int argc, char **argv)
 {
