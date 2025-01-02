@@ -61,5 +61,16 @@
         </ray>
       </sensor>
     </link>
+
+    <plugin name="gz::sim::v8::systems::UserCommands" filename="gz-sim-user-commands-system">
+    </plugin>
+
+    <plugin name="pose3d_control" filename="libgz-sim-pose3d-command-system.so">
+  <topic>/model/drone_model/set_pose</topic>
+  <model>drone_model</model>
+</plugin>
+
+
+
   </model>
 </sdf>

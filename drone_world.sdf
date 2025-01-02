@@ -78,8 +78,7 @@
 
     <!-- Spawn drone -->
     <include>
-      <uri>file://drone_model.sdf</uri>
-      <pose>0 0 0 0 0 0</pose>
+      <uri>model://drone_model.sdf</uri>
     </include>
 
 

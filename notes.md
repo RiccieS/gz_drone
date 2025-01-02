@@ -1,7 +1,7 @@
 # LAUNCH: 
 => need to run those commands in separate terminals:
-SIM: gz sim quadcopter_world.sdf
-LIDAR script: ./build/lidar_control
+SIM: gz sim drone_world.sdf
+Movement script: ./drone_movement
 *** after every change in script, have to run cmake .. and make
 
 turn on/off rotors:
@@ -12,7 +12,7 @@ gz topic -t /X3/gazebo/command/motor_speed --msgtype gz.msgs.Actuators -p 'veloc
 
 LIDAR:
  gz topic -e -t /quadcopter/lidar
- gz topic -e -t /world/basic_quadcopter_world/model/drone_model/link/body/sensor/lidar_sensor
+ gz topic -e -t /model/drone_model/pose
  gz topic -l <== list all topics
 
 *** after every change in .cpp script need to run "cd build" => "make"
