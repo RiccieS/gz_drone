@@ -8,10 +8,11 @@ turn on/off rotors:
 gz topic -t /X3/gazebo/command/motor_speed --msgtype gz.msgs.Actuators -p 'velocity:[700, 700, 700, 700]'
 gz topic -t /X3/gazebo/command/motor_speed --msgtype gz.msgs.Actuators -p 'velocity:[0, 0, 0, 0]'
 
-==> before running "cmake .." => rm -rf *
+==> in .build before running "cmake .." => rm -rf *
 
 LIDAR:
  gz topic -e -t /quadcopter/lidar
+ gz topic -e -t /world/basic_quadcopter_world/model/drone_model/link/body/sensor/lidar_sensor
  gz topic -l <== list all topics
 
 *** after every change in .cpp script need to run "cd build" => "make"
