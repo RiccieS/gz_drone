@@ -37,9 +37,6 @@
       <!-- IMU Sensor -->
       <sensor name="imu_sensor" type="imu">
         <pose>0 0 0.1 0 0 0</pose>
-        <imu>
-          <topic>imu</topic>
-        </imu>
       </sensor>
       <!-- LiDAR Sensor -->
       <sensor name="lidar_sensor" type="gpu_ray">
@@ -64,12 +61,6 @@
 
     <plugin name="gz::sim::v8::systems::UserCommands" filename="gz-sim-user-commands-system">
     </plugin>
-
-    <plugin name="pose3d_control" filename="libgz-sim-pose3d-command-system.so">
-  <topic>/model/drone_model/set_pose</topic>
-  <model>drone_model</model>
-</plugin>
-
 
 
   </model>

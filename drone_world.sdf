@@ -2,20 +2,21 @@
 
 <sdf version="1.6">
   <world name="drone_world">
-    <!-- Physics Configuration 
+    <gravity>0 0 0</gravity>
+    <!-- Physics Configuration  -->
     <physics name="default_physics" type="ode">
       <max_step_size>0.001</max_step_size>
       <real_time_update_rate>1000</real_time_update_rate>
-      <gravity>0 0 -9.8</gravity>
-    </physics> -->
-    <physics name="1ms" type="ignored">
-      <max_step_size>0.001</max_step_size>
-      <real_time_factor>1.0</real_time_factor>
+      
     </physics>
-    <!--<plugin
+    <!-- <physics name="no_physics" type="ode">
+      <gravity>0 0 0</gravity>
+    </physics>-->
+
+    <!-- nwm--><plugin
       filename="gz-sim-physics-system"
       name="gz::sim::systems::Physics">
-    </plugin> -->
+    </plugin> 
     <plugin
       filename="gz-sim-scene-broadcaster-system"
       name="gz::sim::systems::SceneBroadcaster">
@@ -29,10 +30,9 @@
       name="gz::sim::systems::Sensors">
       <render_engine>ogre2</render_engine>
     </plugin>
-    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu" />
 
-    <plugin filename="gz-sim-altimeter-system" name="gz::sim::systems::Altimeter"/>
-
+    <plugin filename="gz-sim-altimeter-system" name="gz::sim::systems::Altimeter" />
 
 
     <light type="directional" name="sun">
