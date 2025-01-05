@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <sdf version="1.6">
   <model name="drone_model">
+    <frame name="lidar_frame" attached_to='body'>
+      <pose>0.8 0 0.5 0 0 0</pose>
+    </frame>
     <static>false</static>
     <link name="body">
       <pose>0 0 0 0 0 0</pose>
@@ -37,25 +40,40 @@
       <!-- IMU Sensor -->
       <sensor name="imu_sensor" type="imu">
         <pose>0 0 0.1 0 0 0</pose>
+        <always_on>1</always_on>
+        <update_rate>1</update_rate>
+        <visualize>true</visualize>
+        <topic>imu</topic>
       </sensor>
       <!-- LiDAR Sensor -->
-      <sensor name="lidar_sensor" type="gpu_ray">
-        <pose>0 0 0.2 0 0 0</pose>
+      <sensor name="gpu_lidar" type="gpu_lidar">
+        <!-- <pose>0 0 0.2 0 0 0</pose> -->
+        <pose relative_to='lidar_frame'>0 0 0 0 0 0</pose>
+        <topic>lidar</topic>
+        <update_rate>1</update_rate>
         <ray>
           <scan>
             <horizontal>
               <samples>360</samples>
               <resolution>1</resolution>
-              <min_angle>-3.14159</min_angle>
-              <max_angle>3.14159</max_angle>
+              <min_angle>-1.396263</min_angle>
+              <max_angle>1.396263</max_angle>
             </horizontal>
+            <vertical>
+              <samples>1</samples>
+              <resolution>0.01</resolution>
+              <min_angle>0</min_angle>
+              <max_angle>0</max_angle>
+            </vertical>
           </scan>
           <range>
-            <min>0.1</min>
+            <min>0.08</min>
             <max>10.0</max>
             <resolution>0.01</resolution>
           </range>
         </ray>
+        <always_on>1</always_on>
+        <visualize>true</visualize>
       </sensor>
     </link>
 
